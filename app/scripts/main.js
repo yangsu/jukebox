@@ -100,6 +100,15 @@ $(document).ready(function(){
   //     dancerInst.play();
   //   });
 
+  var socket = io.connect('http://djbox.fm:80');
+  //var socket = io.connect('http://localhost');
+  socket.on('new_jukebox', function (data) {
+    console.log('New Jukebox', data);
+  });
+  socket.on('play_song', function (data) {
+    console.log('Play Song', data);
+  });
+
 }).on('click', 'a:not([data-bypass])', function(evt) {
   var href = $(this).attr('href');
   if (href && href.indexOf('#') === 0) {
