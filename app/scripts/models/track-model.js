@@ -34,20 +34,21 @@
         .addSourceFilter({
           type: 0, // LOWPASS
           threshold: window.Constants.FILTER
-        });
+        })
+        .addGenerators();
 
-        var generatorAmp = (1 - window.Constants.SOURCE_AMP)/window.Constants.EMBED.length;
 
-        _.each(window.Constants.EMBED, function (embedFreq) {
-          self.addGenerator({
-            type: window.DSP.SINE,
-            frequency: embedFreq,
-            // frequency: window.Constants.FILTER,
-            amplitude: generatorAmp,
-            bufferSize: window.Constants.BUFFER_SIZE,
-            sampleRate: window.Constants.SAMPLE_RATE
-          });
-        });
+
+        var procNode = context.createScriptProcessor(2048,1,1);
+        procNode.onaudioprocess = function (e) {
+          console.log(e);
+          // var output = e.outputBuffer.getChannelData(0);
+          // for (var i = 0; i < output.length; i++) {
+          //   output[i] = Math.random();
+          //   // Math.random() sends random numbers, but you can make
+          //   // that be anything you want
+          // }
+        }
       }
     },
     fetch: function (options) {
@@ -81,6 +82,7 @@
               }
 
               model.setSource(buffer);
+              model.trigger('loaded');
 
               if (options.success) options.success(model, resp);
             },
@@ -97,20 +99,59 @@
       request.send();
 
     },
+    // Getters
+    getLength: function () {
+      var source = this.get('source');
+      return source && source.buffer && source.buffer.duration;
+    },
+    getCurrentTime: function () {
+      var source = this.get('source')
+        , currentTime = source && source.context && source.context.currentTime;
+      return currentTime;
+    },
+    // Setters
     setSource: function (buffer) {
-      if (this.get('source')) {
-        this.stop(0);
-        this.get('source').disconnect(0);
+      var source = this.get('source');
+      if (source) {
+        source.noteOff(0);
+        source.disconnect(0);
         this.unset('source');
       }
-      var source = this.get('context').createBufferSource();
+      source = this.get('context').createBufferSource();
       source.loop = false;
       source.buffer = buffer;
       // src --> sourceFilter --> sourceGain --> masterGain --> output
       source.connect(this.get('sourceFilter'));
       this.set({
+        buffer: buffer,
         source: source
       });
+      return this;
+    },
+    addGenerators: function () {
+      if (this.get('generators')) {
+        _.each(this.get('generators'), function (generator) {
+          generator.disconnect(0);
+        });
+        this.set('generators', []);
+      }
+      var self = this;
+      _.each(window.Constants.EMBED, function (embedFreq) {
+        self.addGenerator({
+          type: window.DSP.SINE,
+          frequency: embedFreq,
+          // frequency: window.Constants.FILTER,
+          amplitude: window.Constants.GEN_AMP,
+          bufferSize: window.Constants.BUFFER_SIZE,
+          sampleRate: window.Constants.SAMPLE_RATE
+        });
+      });
+      return this;
+    },
+    reconstruct: function () {
+      var context = this.get('context');
+      this.setSource(this.get('buffer'));
+      this.addGenerators();
       return this;
     },
     // Gains
@@ -177,21 +218,35 @@
       }
       return this;
     },
-    genAction: function (action, delay) {
-      var generators = this.get('generators');
+    // Commands
+    genAction: function (action, delay, offset, duration) {
+      var generators = this.get('generators')
+        , sourceAction = (action == 'noteOn' && offset) ? 'noteGrainOn' : action;
       if (this.get('source') && generators && generators.length) {
         delay = delay || 0;
-        this.get('source')[action](delay);
+        this.get('source')[sourceAction](delay, offset || 0, this.get('buffer').duration - offset);
         _.each(generators, function (generator) {
           generator[action](delay);
         });
       }
       return this;
     },
-    play: function (delay) {
-      return this.genAction('noteOn', delay);
+    play: function (delay, offset, duration) {
+      if (this.get('stopped') === true) {
+        this.set('stopped', false);
+        this.reconstruct();
+      }
+      return this.genAction('noteOn', delay, this.lastLocation || 0);
+    },
+    pause: function (delay) {
+      this.lastLocation = this.getCurrentTime();
+
+      this.set('stopped', true);
+      return this.genAction('noteOff', delay);
     },
     stop: function (delay) {
+      this.lastLocation = 0;
+      this.set('stopped', true);
       return this.genAction('noteOff', delay);
     }
   });

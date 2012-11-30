@@ -7,8 +7,10 @@ window.Constants = {
   SAMPLE_RATE: 44100,
   FILTER: 17000,
   EMBED: [18500, 19170],
+  // EMBED: [400],
   SOURCE_AMP: 0.8
 };
+window.Constants.GEN_AMP = (1 - window.Constants.SOURCE_AMP)/window.Constants.EMBED.length;
 
 window.generateOscillator = function (options) {
   return new Oscillator(
@@ -33,25 +35,25 @@ window.audio = {
     var model = new audio.Models.TrackModel({
       context: context
     });
-    // model.fetch({
-    //   url: '/audio/IO-5.0.ogg',
-    //   // url: 'http://www.djbox.fm/api/stream/293',
-    //   success: function (trackModel) {
-    //     trackModel.play();
-    //   }
-    // });
+    model.fetch({
+      url: '/audio/IO-5.0.ogg',
+      // url: 'http://www.djbox.fm/api/stream/293',
+      success: function (trackModel) {
+      }
+    });
 
     var view = new audio.Views.TrackView({
       el: '#jukebox',
-      model: model
+      model: model,
+      context: context
     }).render();
 
-    model.fetch({
-      url: 'http://www.djbox.fm/api/stream/293',
-      success: function (trackModel) {
-        // trackModel.play();
-      }
-    });
+    // model.fetch({
+    //   url: 'http://www.djbox.fm/api/stream/293',
+    //   success: function (trackModel) {
+    //     // trackModel.play();
+    //   }
+    // });
 
     window.audio.view = view;
     window.audio.model = model;
