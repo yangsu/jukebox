@@ -5,8 +5,8 @@ window.Constants = {
   CHANNELS: 1,
   BUFFER_SIZE: 65536,
   SAMPLE_RATE: 44100,
-  FILTER: 44000,
-  EMBED: [18500, 19170],
+  FILTER: 18500,
+  // EMBED: [18500, 19170],
   // EMBED: [400],
   SOURCE_AMP: 0.8
 };
@@ -63,7 +63,7 @@ window.audio = {
             console.log('fetched all');
           }
         });
-        window.Constants.FILTER = data.frequency;
+        window.Constants.EMBED = [data.frequency];
         window.Constants.jbid = data.jbid;
 
         window.audio.model.set('tracks', tracks);
