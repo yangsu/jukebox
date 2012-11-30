@@ -5,9 +5,9 @@ window.Constants = {
   CHANNELS: 1,
   BUFFER_SIZE: 65536,
   SAMPLE_RATE: 44100,
-  FILTER: 17000,
-  // EMBED: [18500, 19170],
-  EMBED: [400],
+  FILTER: 44000,
+  EMBED: [18500, 19170],
+  // EMBED: [400],
   SOURCE_AMP: 0.8
 };
 window.Constants.GEN_AMP = (1 - window.Constants.SOURCE_AMP)/window.Constants.EMBED.length;
@@ -46,7 +46,7 @@ window.audio = {
       el: '#jukebox',
       model: model,
       context: context
-    }).render();
+    });
 
     // model.fetch({
     //   url: 'http://www.djbox.fm/api/stream/293',
@@ -82,7 +82,7 @@ $(document).ready(function(){
   });
 
   // window.dancerInst = new Dancer(),
-  //   canvas = document.getElementById('fftcanvas');
+  //   canvas = document.getElementById('fftcanvas2');
   // dancerInst.fft( canvas, {
   //     width: 2,
   //     spacing: 1,
@@ -96,7 +96,7 @@ $(document).ready(function(){
   //   })
   //   .load(document.getElementById('music'))
   //   .bind('loaded', function () {
-  //     // dancerInst.play();
+  //     dancerInst.play();
   //   });
 
 }).on('click', 'a:not([data-bypass])', function(evt) {

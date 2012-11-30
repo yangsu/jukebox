@@ -473,7 +473,6 @@
     this.source = this.context.createMediaElementSource( this.audio );
     this.source.connect( this.proc );
     this.source.connect( this.gain );
-    this.source = this.context.createMediaElementSource( this.audio );
     this.gain.connect( this.context.destination );
     this.proc.connect( this.context.destination );
  

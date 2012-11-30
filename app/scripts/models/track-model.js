@@ -141,19 +141,14 @@
       var model = this
         , context = model.get('context')
         , analyser = context.createAnalyser()
-        , processor = context.createJavaScriptNode(4096 /*samples*/, 1 /*inputs*/, 1 /*outputs*/);
+        , processor = context.createJavaScriptNode(1024 /*samples*/, 1 /*inputs*/, 1 /*outputs*/);
 
       processor.onaudioprocess = function(e) {
         model.trigger('seek', model.getCurrentTime(), model.getLength());
         var freqByteData = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteTimeDomainData(freqByteData);
         analyser.getByteFrequencyData(freqByteData);
-        // render freqByteData to <canvas>.
-        // var output = e.outputBuffer.getChannelData(0);
-        // for (var i = 0; i < output.length; i++) {
-        //   output[i] = Math.random();
-        //   // Math.random() sends random numbers, but you can make
-        //   // that be anything you want
-        // }
+        model.trigger('fft', freqByteData);
       };
 
       return this.set({
