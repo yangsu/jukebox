@@ -32,7 +32,7 @@ window.audio = {
     console.log('Hello from Backbone!');
     window.context = new webkitAudioContext();
 
-    var model = new audio.Models.TrackModel({
+    var model = new audio.Models.ApplicationModel({
       context: context
     });
     model.fetch({
@@ -42,7 +42,7 @@ window.audio = {
       }
     });
 
-    var view = new audio.Views.TrackView({
+    var view = new audio.Views.ApplicationView({
       el: '#jukebox',
       model: model,
       context: context
