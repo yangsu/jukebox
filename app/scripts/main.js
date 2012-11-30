@@ -1,8 +1,22 @@
 
-window.FilterSample = {
+window.Constants = {
   FREQ_MUL: 7000,
   QUAL_MUL: 30,
+  CHANNELS: 1,
+  BUFFER_SIZE: 65536,
+  SAMPLE_RATE: 44100,
+  FILTER: 17000,
   playing: false
+};
+
+window.generateOscillator = function (options) {
+  return new Oscillator(
+    options.type,
+    options.frequency,
+    options.amplitude,
+    options.bufferSize,
+    options.sampleRate
+  ).generate();
 };
 
 window.audio = {
@@ -13,8 +27,10 @@ window.audio = {
   init: function() {
     console.log('Hello from Backbone!');
     window.context = new webkitAudioContext();
+
     var model = new audio.Models.TrackModel({
       url: '/audio/IO-5.0.ogg',
+      // url: 'http://www.djbox.fm/api/stream/293',
       context: context
     });
     model.fetch({
@@ -26,12 +42,52 @@ window.audio = {
 
         var filter = context.createBiquadFilter();
         filter.type = 0; // LOWPASS
-        filter.frequency.value = 48000;
+        filter.frequency.value = Constants.FILTER;
         filter.Q.value = 30;
 
-        trackModel
-          .addFilter(filter)
-          .play();
+        trackModel.addFilter(filter)
+        .setVolume(0.8);
+
+        var sine = window.generateOscillator({
+          type: DSP.SINE,
+          frequency: 18500,
+          // frequency: Constants.FILTER,
+          amplitude: 0.1,
+          bufferSize: Constants.BUFFER_SIZE,
+          sampleRate: Constants.SAMPLE_RATE
+        });
+
+        var src = context.createBufferSource();
+        src.buffer = context.createBuffer(Constants.CHANNELS, Constants.BUFFER_SIZE, Constants.SAMPLE_RATE);
+        src.buffer.getChannelData(0).set(sine);
+        // src.buffer.getChannelData(1).set(sine);
+        src.looping = true;
+
+        // src.connect(trackModel.get('destination'));
+        src.connect(context.destination);
+
+        var sine2 = window.generateOscillator({
+          type: DSP.SINE,
+          frequency: 19170,
+          // frequency: Constants.FILTER,
+          amplitude: 0.1,
+          bufferSize: Constants.BUFFER_SIZE,
+          sampleRate: Constants.SAMPLE_RATE
+        });
+
+        var src2 = context.createBufferSource();
+        src2.buffer = context.createBuffer(Constants.CHANNELS, Constants.BUFFER_SIZE, Constants.SAMPLE_RATE);
+        src2.buffer.getChannelData(0).set(sine2);
+        // src2.buffer.getChannelData(1).set(sine2);
+        src2.looping = true;
+
+        // src2.connect(trackModel.get('destination'));
+        src2.connect(context.destination);
+
+        src.noteOn(0);
+        src2.noteOn(0);
+
+        trackModel.play();
       }
     });
 
