@@ -144,7 +144,7 @@
         , processor = context.createJavaScriptNode(4096 /*samples*/, 1 /*inputs*/, 1 /*outputs*/);
 
       processor.onaudioprocess = function(e) {
-        console.log(model.getCurrentTime(), model.getLength());
+        model.trigger('seek', model.getCurrentTime(), model.getLength());
         var freqByteData = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteFrequencyData(freqByteData);
         // render freqByteData to <canvas>.

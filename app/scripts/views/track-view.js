@@ -4,6 +4,7 @@ audio.Views.TrackView = Backbone.View.extend({
 	initialize: function () {
 		this.model
 			.on('progress', this.updateProgressBar, this)
+			.on('seek', this.updateSeek, this)
 			.on('loaded', this.onLoad, this)
 			.on('sync', this.render, this)
 		;
@@ -59,10 +60,18 @@ audio.Views.TrackView = Backbone.View.extend({
 	updateProgressBar: function (progressPercentage) {
 		this.$('#progress').val(progressPercentage).trigger('change');
 	},
+	updateSeek: function (seekPosition, duration) {
+		var $seek = this.$('#seek');
+		$seek.i = 'test' + seekPosition;
+		$seek.val(seekPosition/duration).trigger('change');
+	},
 	render: function () {
 		this.$el.html(this.template(this.model.toJSON()));
-		this.$('.dial').knob({
+		this.$('.readonly').knob({
 			readOnly: true,
+			displayInput: false
+		});
+		this.$('.dial').knob({
 			displayInput: false
 		});
 		return this;
