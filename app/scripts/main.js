@@ -48,6 +48,9 @@ window.audio = {
       // Get back to the frequency value between min and max.
       model.setFilterFrequency(maxValue * multiplier);
     });
+    $('#volume').change(function(e) {
+      model.setVolume(e.target.value);
+    });
   },
   template: function (templateName) {
     var path = 'scripts/templates/' + templateName + '.ejs';

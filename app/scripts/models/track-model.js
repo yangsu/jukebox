@@ -8,10 +8,14 @@
   };
 
   audio.Models.TrackModel = Backbone.Model.extend({
+    initialize: function (options) {
+      this.set('destination', this.get('context').destination);
+    },
     fetch: function (options) {
       var model = this
         , url = model.get('url') || urlError()
-        , context = model.get('context') || contextError();
+        , context = model.get('context') || contextError()
+        , destination = model.get('destination');
 
       options = options || {};
 
@@ -34,14 +38,20 @@
 
               var source = context.createBufferSource();
               source.buffer = buffer;
-              source.connect(context.destination);
 
               _.each(options.sourceOptions, function (value, key) {
                 source[key] = value;
               });
 
+              var gain = context.createGainNode();
+
+              source.connect(gain);
+              gain.connect(destination);
+
               model.set({
-                source: source
+                source: source,
+                gain: gain,
+                destination: gain
               });
 
               if (options.success) options.success(model, resp);
@@ -59,20 +69,26 @@
       request.send();
 
     },
+    setVolume: function (value) {
+      if (this.get('gain')) {
+        this.get('gain').gain.value = value;
+      }
+      return this;
+    },
     addFilter: function (filter) {
-      if (this.get('context') && this.get('source')) {
+      if (this.get('destination') && this.get('source')) {
         this.get('source').disconnect(0);
         this.get('source').connect(filter);
-        filter.connect(this.get('context').destination);
+        filter.connect(this.get('destination'));
         this.set('filter', filter);
       }
       return this;
     },
     disconnectFilter: function (delay) {
       delay = delay || 0;
-      if (this.get('context') && this.get('source') && this.get('context')) {
+      if (this.get('destination') && this.get('source') && this.get('filter')) {
         this.get('filter').disconnect(delay);
-        this.get('source').connect(this.get('context').destination);
+        this.get('source').connect(this.get('destination'));
       }
       return this;
     },
