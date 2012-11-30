@@ -20,12 +20,12 @@
         , context = self.get('context');
       if (context) {
         var masterGain = createGain(context);
-        masterGain.connect(context.destination);
+        // masterGain.connect(context.destination);
 
         var sourceGain = createGain(context, window.Constants.SOURCE_AMP);
-        sourceGain.connect(masterGain);
+        // sourceGain.connect(masterGain);
 
-        // sourceGain --> masterGain --> output
+        // sourceGain -> masterGain -> output
         self.set({
           masterGain: masterGain,
           sourceGain: sourceGain,
@@ -35,21 +35,13 @@
           type: 0, // LOWPASS
           threshold: window.Constants.FILTER
         })
-        .addGenerators();
-
-
-
-        var procNode = context.createScriptProcessor(2048,1,1);
-        procNode.onaudioprocess = function (e) {
-          console.log(e);
-          // var output = e.outputBuffer.getChannelData(0);
-          // for (var i = 0; i < output.length; i++) {
-          //   output[i] = Math.random();
-          //   // Math.random() sends random numbers, but you can make
-          //   // that be anything you want
-          // }
-        }
+        .addGenerators()
+        .addProcessingNodes();
       }
+
+      // self.startTime = 0;
+      self.played = 0;
+      self.lastTime = 0;
     },
     fetch: function (options) {
       var model = this
@@ -81,8 +73,10 @@
                 options.error && options.error();
               }
 
-              model.setSource(buffer);
-              model.trigger('loaded');
+              model
+                .setSource(buffer)
+                .connect()
+                .trigger('loaded');
 
               if (options.success) options.success(model, resp);
             },
@@ -104,35 +98,30 @@
       var source = this.get('source');
       return source && source.buffer && source.buffer.duration;
     },
-    getCurrentTime: function () {
-      var source = this.get('source')
-        , currentTime = source && source.context && source.context.currentTime;
+    getContextCurrentTime: function () {
+      var context = this.get('context')
+        , currentTime = context && context.currentTime;
       return currentTime;
+    },
+    getCurrentTime: function () {
+      return this.getContextCurrentTime() - this.startTime + this.played;
     },
     // Setters
     setSource: function (buffer) {
       var source = this.get('source');
       if (source) {
-        source.noteOff(0);
-        source.disconnect(0);
         this.unset('source');
       }
       source = this.get('context').createBufferSource();
       source.loop = false;
       source.buffer = buffer;
-      // src --> sourceFilter --> sourceGain --> masterGain --> output
-      source.connect(this.get('sourceFilter'));
-      this.set({
+      return this.set({
         buffer: buffer,
         source: source
       });
-      return this;
     },
     addGenerators: function () {
       if (this.get('generators')) {
-        _.each(this.get('generators'), function (generator) {
-          generator.disconnect(0);
-        });
         this.set('generators', []);
       }
       var self = this;
@@ -148,10 +137,35 @@
       });
       return this;
     },
+    addProcessingNodes: function () {
+      var model = this
+        , context = model.get('context')
+        , analyser = context.createAnalyser()
+        , processor = context.createJavaScriptNode(4096 /*samples*/, 1 /*inputs*/, 1 /*outputs*/);
+
+      processor.onaudioprocess = function(e) {
+        console.log(model.getCurrentTime(), model.getLength());
+        var freqByteData = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(freqByteData);
+        // render freqByteData to <canvas>.
+        // var output = e.outputBuffer.getChannelData(0);
+        // for (var i = 0; i < output.length; i++) {
+        //   output[i] = Math.random();
+        //   // Math.random() sends random numbers, but you can make
+        //   // that be anything you want
+        // }
+      };
+
+      return this.set({
+        analyser: analyser,
+        processor: processor
+      });
+    },
     reconstruct: function () {
       var context = this.get('context');
       this.setSource(this.get('buffer'));
       this.addGenerators();
+      this.connect();
       return this;
     },
     // Gains
@@ -174,16 +188,14 @@
         sourceFilter.type = options.type;
         sourceFilter.frequency.value = options.threshold;
         sourceFilter.Q.value = options.quality || 30;
-        // sourceFilter --> sourceGain --> masterGain --> output
-        sourceFilter.connect(this.get('sourceGain'));
         this.set('sourceFilter', sourceFilter);
       }
       return this;
     },
     disconnectFilter: function (delay) {
       if (this.get('source') && this.get('sourceGain') && this.get('sourceFilter')) {
-        this.get('sourceFilter').disconnect(delay || 0);
-        this.get('source').connect(this.get('sourceGain'));
+        // this.get('sourceFilter').disconnect(delay || 0);
+        // this.get('source').connect(this.get('sourceGain'));
       }
       return this;
     },
@@ -191,6 +203,35 @@
       if (this.get('sourceFilter')) {
         this.get('sourceFilter').frequency.value = value;
       }
+    },
+    connect: function () {
+      var self = this;
+      // analyser -> processor -> sourceFilter -> sourceGain -> masterGain -> output
+      self.get('source').connect(self.get('sourceGain'));
+      self.get('sourceGain').connect(self.get('sourceFilter'));
+      self.get('sourceGain').connect(self.get('analyser'));
+      self.get('analyser').connect(self.get('processor'));
+      self.get('processor').connect(self.get('sourceFilter'));
+      self.get('sourceFilter').connect(self.get('masterGain'));
+      self.get('masterGain').connect(self.get('context').destination);
+
+      _.each(self.get('generators'), function(generator) {
+        generator.connect(self.get('masterGain'));
+      });
+      return this;
+    },
+    disconnect: function () {
+      _.each(this.attributes, function (value, key) {
+        if (value && value.disconnect) {
+          value.disconnect();
+        }
+      });
+
+      _.each(this.get('generators'), function(generator) {
+        generator.disconnect(0);
+      });
+
+      return this;
     },
     // Generators
     addGenerator: function (options) {
@@ -210,9 +251,6 @@
         });
 
         generatorSource.loop = options.loop || true;
-
-        //generator --> masterGain --> output
-        generatorSource.connect(this.get('masterGain'));
 
         this.get('generators').push(generatorSource);
       }
@@ -236,17 +274,20 @@
         this.set('stopped', false);
         this.reconstruct();
       }
-      return this.genAction('noteOn', delay, this.lastLocation || 0);
+      this.startTime = this.getContextCurrentTime();
+      return this.genAction('noteOn', delay, this.lastTime || 0);
     },
     pause: function (delay) {
-      this.lastLocation = this.getCurrentTime();
-
+      this.lastTime = this.getContextCurrentTime();
       this.set('stopped', true);
+      this.played = this.getCurrentTime();
+      this.disconnect();
       return this.genAction('noteOff', delay);
     },
     stop: function (delay) {
-      this.lastLocation = 0;
+      this.lastTime = 0;
       this.set('stopped', true);
+      this.disconnect();
       return this.genAction('noteOff', delay);
     }
   });

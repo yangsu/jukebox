@@ -6,8 +6,8 @@ window.Constants = {
   BUFFER_SIZE: 65536,
   SAMPLE_RATE: 44100,
   FILTER: 17000,
-  EMBED: [18500, 19170],
-  // EMBED: [400],
+  // EMBED: [18500, 19170],
+  EMBED: [400],
   SOURCE_AMP: 0.8
 };
 window.Constants.GEN_AMP = (1 - window.Constants.SOURCE_AMP)/window.Constants.EMBED.length;
