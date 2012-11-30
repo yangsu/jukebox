@@ -1,0 +1,9 @@
+<% var ctx = arguments[0];%>
+<input id="progress" type="text" class="dial" data-min="0" data-max="100" data-readOnly="true" data-width="230" data-height="230" data-displayInput="false" data-thickness="0.03" data-fgColor="#e51700">
+<img src="<%= ctx.cover %>" class="cover" alt="Album Art">
+<img src="<%= ctx.artist_photo %>" class="artistImage" alt="Artist Image">
+<h2 class="artist"><%= ctx.artist %></h2>
+<h3 class="title"><%= ctx.title %></h3>
+<h3 class="year"><%= ctx.year %></h3>
+<% var seconds = ctx.duration/1000; %>
+<h4 class="duration"><%= Math.floor(seconds/60) %>:<%= Math.floor(seconds%60) %></h4>

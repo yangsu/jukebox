@@ -43,55 +43,33 @@
       self.played = 0;
       self.lastTime = 0;
     },
-    fetch: function (options) {
-      var model = this
-        , url = options.url || model.get('url') || urlError()
-        , context = model.get('context') || contextError();
+    switchSong: function (idOrIndex) {
+      var tracks = this.get('tracks')
+        , model;
+      if (model = tracks.at(idOrIndex)) {
+        this.set('currentIndex', idOrIndex)
+      } else if (model = tracks.get(idOrIndex)) {
+        this.set('currentId', idOrIndex);
+      } else {
+        console.log('error');
+        return this;
+      }
 
-      options = options || {};
+      var self = this
+        , switchSongFunc = function () {
+          self
+            .setSource(model.get('buffer'))
+            .set('currentTrack', model)
+            .connect();
+          self.trigger('switchSong', model);
+        };
+      if (model.get('loaded')) {
+        switchSongFunc();
+      } else {
+        model.bind('loaded', _.once(switchSongFunc));
+      }
 
-      options.error = Backbone.wrapError(options.error, model, options);
-
-      // Load buffer asynchronously
-      var request = new XMLHttpRequest();
-      request.open("GET", url, true);
-      request.responseType = "arraybuffer";
-
-      request.onprogress = function (evt) {
-        if (evt.lengthComputable) {
-          var percentComplete = (evt.loaded / evt.total)*100;
-          model.trigger('progress', percentComplete);
-        }
-      };
-      request.onload = function(resp, status, xhr) {
-        if (context) {
-          context.decodeAudioData(
-            request.response,
-            function(buffer) {
-              if (!buffer) {
-                console.log('error decoding file data: ' + url);
-                options.error && options.error();
-              }
-
-              model
-                .setSource(buffer)
-                .connect()
-                .trigger('loaded');
-
-              if (options.success) options.success(model, resp);
-            },
-            options.error
-          );
-        } else {
-          console.log('must have a context');
-          options.error && options.error();
-        }
-      };
-
-      request.onerror = options.error;
-
-      request.send();
-
+      return this;
     },
     // Getters
     getLength: function () {

@@ -3,11 +3,12 @@ audio.Views.ApplicationView = Backbone.View.extend({
   template: audio.template('application'),
   initialize: function () {
     this.model
-      .on('progress', this.updateProgressBar, this)
+      // .on('progress', this.updateProgressBar, this)
       .on('seek', this.updateSeek, this)
-      .on('loaded', this.onLoad, this)
+      .on('loadedAllTracks', this.onLoad, this)
       // .on('sync', this.render, this)
       .on('fft', this.renderFFT, this)
+      .on('switchSong', this.renderSongTransition, this)
     ;
 
     this.render();
@@ -29,6 +30,7 @@ audio.Views.ApplicationView = Backbone.View.extend({
   },
   onLoad: function () {
     this.$('#play').removeAttr('disabled');
+    this.model.switchSong(0);
   },
   onPlay: function () {
     this.$('#pause, #stop').removeAttr('disabled');
@@ -74,6 +76,11 @@ audio.Views.ApplicationView = Backbone.View.extend({
     $seek.data('rangeMax', duration);
     $seek.val((isNaN(seekPosition) ? 0 : seekPosition )/duration);
     $seek.trigger('change');
+  },
+  renderSongTransition: function (newTrack) {
+    this.$('#panel > div:nth-child(2) > canvas').css({
+      background: newTrack.get('cover')
+    });
   },
   renderFFT: function (freqByteData) {
     var

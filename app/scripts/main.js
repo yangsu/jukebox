@@ -48,12 +48,30 @@ window.audio = {
       context: context
     });
 
-    // model.fetch({
-    //   url: 'http://www.djbox.fm/api/stream/293',
-    //   success: function (trackModel) {
-    //     // trackModel.play();
-    //   }
-    // });
+    var socket = io.connect('http://djbox.fm:80');
+    //var socket = io.connect('http://localhost');
+    socket
+      .on('new_jukebox', function (data) {
+        var tracks = new audio.Collections.TrackCollection(data.songs);
+        var tracksView = new audio.Views.TracksView({
+          el: '#tracks',
+          model: tracks
+        }).constructSubviews().render();
+
+        tracks.fetchTrackStreams({
+          success: function () {
+            console.log('fetched all');
+          }
+        });
+        window.Constants.FILTER = data.frequency;
+        window.Constants.jbid = data.jbid;
+
+        window.audio.model.set('tracks', tracks);
+        console.log('New Jukebox', data);
+      })
+      .on('play_song', function (data) {
+        console.log('Play Song', data);
+      });
 
     window.audio.view = view;
     window.audio.model = model;
@@ -99,15 +117,6 @@ $(document).ready(function(){
   //   .bind('loaded', function () {
   //     dancerInst.play();
   //   });
-
-  var socket = io.connect('http://djbox.fm:80');
-  //var socket = io.connect('http://localhost');
-  socket.on('new_jukebox', function (data) {
-    console.log('New Jukebox', data);
-  });
-  socket.on('play_song', function (data) {
-    console.log('Play Song', data);
-  });
 
 }).on('click', 'a:not([data-bypass])', function(evt) {
   var href = $(this).attr('href');
