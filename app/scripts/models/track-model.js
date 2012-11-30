@@ -36,6 +36,10 @@
               source.buffer = buffer;
               source.connect(context.destination);
 
+              _.each(options.sourceOptions, function (value, key) {
+                source[key] = value;
+              });
+
               model.set({
                 source: source
               });
@@ -55,12 +59,35 @@
       request.send();
 
     },
+    addFilter: function (filter) {
+      if (this.get('context') && this.get('source')) {
+        this.get('source').disconnect(0);
+        this.get('source').connect(filter);
+        filter.connect(this.get('context').destination);
+        this.set('filter', filter);
+      }
+      return this;
+    },
+    disconnectFilter: function (delay) {
+      delay = delay || 0;
+      if (this.get('context') && this.get('source') && this.get('context')) {
+        this.get('filter').disconnect(delay);
+        this.get('source').connect(this.get('context').destination);
+      }
+      return this;
+    },
+    setFilterFrequency: function (value) {
+      if (this.get('filter')) {
+        this.get('filter').frequency.value = value;
+      }
+    },
     play: function (delay) {
       delay = delay || 0;
       var source = this.get('source');
       if (source) {
         source.noteOn(delay);
       }
+      return this;
     },
     stop: function (delay) {
       delay = delay || 0;
@@ -68,6 +95,7 @@
       if (source) {
         source.noteOff(delay);
       }
+      return this;
     }
   });
 })(Backbone, audio, window, _);
