@@ -23,6 +23,32 @@ window.audio = {
 
 $(document).ready(function(){
   audio.init();
+
+  Dancer.setOptions({
+    flashSWF : '/scripts/vendor/soundmanager2.swf',
+    flashJS  : '/scripts/vendor/soundmanager2.js'
+    // flashJS  : '/scripts/vendor/soundmanager2.min.js'
+  });
+
+  var dancer = new Dancer(),
+    canvas = document.getElementById('fftcanvas');
+    dancer.fft( canvas, {
+      width: 2,
+      spacing: 1,
+      fillStyle: "black"
+    });
+  dancer
+    .bind('progress', function (e) {
+      console.log(arguments);
+    })
+    .bind('update', function () {
+    })
+    .load(document.getElementById('music'))
+    .bind('loaded', function () {
+      dancer.play();
+    });
+
+
 }).on('click', 'a:not([data-bypass])', function(evt) {
   var href = $(this).attr('href');
   if (href && href.indexOf('#') === 0) {

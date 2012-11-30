@@ -13,20 +13,12 @@
 
     </head>
     <body>
-    <div class="container">
-        <div class="hero-unit">
-            <h1>Cheerio!</h1>
-            <p>You now have</p>
-            <ul>
-                <li>HTML5 Boilerplate</li>
-                <li>jQuery</li>
-                <li>Backbone.js</li>
-                <li>Lodash</li>
-                <li>Mocha</li>
-            </ul>
-            <p>installed.</p>
-            <h3>Enjoy coding! - Yeoman</h3>
-        </div>
+    <div id="main" class="container">
+        <div id="progress">Loading...</div>
+        <audio src="/audio/IO-5.0.ogg" id="music">
+            <p>Your browser does not support the audio element.</p>
+        </audio>
+        <canvas id="fftcanvas"></canvas>
     </div>
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
@@ -38,6 +30,9 @@
         <script src="scripts/vendor/jquery.min.js"></script>
         <script src="scripts/vendor/lodash.min.js"></script>
         <script src="scripts/vendor/backbone-min.js"></script>
+        <script src="scripts/vendor/dancer.js"></script>
+        <!-- <script src="scripts/vendor/dancer.min.js"></script> -->
+        <script src="scripts/vendor/dancer.fft.js"></script>
         <script src="scripts/main.js"></script>
         <script src="scripts/views/application-view.js"></script>
         <script src="scripts/models/application-model.js"></script>
