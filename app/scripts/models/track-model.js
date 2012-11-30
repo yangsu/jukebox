@@ -3,10 +3,15 @@
     throw new Error('A "url" property or function must be specified');
   };
 
+  var contextError = function () {
+    throw new Error('A "context" property or function must be specified');
+  };
+
   audio.Models.TrackModel = Backbone.Model.extend({
     fetch: function (options) {
       var model = this
-        , url = model.get('url') || urlError();
+        , url = model.get('url') || urlError()
+        , context = model.get('context') || contextError();
 
       options = options || {};
 
@@ -18,8 +23,8 @@
       request.responseType = "arraybuffer";
 
       request.onload = function(resp, status, xhr) {
-        if (model.context) {
-          model.context.decodeAudioData(
+        if (context) {
+          context.decodeAudioData(
             request.response,
             function(buffer) {
               if (!buffer) {
@@ -27,9 +32,9 @@
                 options.error && options.error();
               }
 
-              var source = model.context.createBufferSource();
+              var source = context.createBufferSource();
               source.buffer = buffer;
-              source.connect(model.context.destination);
+              source.connect(context.destination);
 
               model.set({
                 source: source

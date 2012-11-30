@@ -8,9 +8,9 @@ window.audio = {
     console.log('Hello from Backbone!');
     window.context = new webkitAudioContext();
     var model = new audio.Models.TrackModel({
-      url: '/audio/IO-5.0.ogg'
+      url: '/audio/IO-5.0.ogg',
+      context: context
     });
-    model.context = context;
     model.fetch({
       success: function (trackModel) {
         console.log(arguments);
