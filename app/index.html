@@ -13,21 +13,35 @@
 
     </head>
     <body>
-    <div class="container">
-        <div class="hero-unit">
-            <h1>Cheerio!</h1>
-            <p>You now have</p>
-            <ul>
-                <li>HTML5 Boilerplate</li>
-                <li>jQuery</li>
-                <li>Backbone.js</li>
-                <li>Lodash</li>
-                <li>Mocha</li>
-            </ul>
-            <p>installed.</p>
-            <h3>Enjoy coding! - Yeoman</h3>
+        <div id="main" class="container">
+            <canvas id="fft" width="512" height="250"></canvas>
+            <div id="chrome-logo" class="reflect hidden">
+                <div class="icon">
+                    <div class="green"></div>
+                    <div class="yellow"></div>
+                    <div class="blue"></div>
+                    <div class="red"></div>
+                </div>
+            </div>
+            <section>
+                <div id="controls">
+                    <span id="buttons">
+                        <button onclick="runCmd(this)" data-func="play" disabled>start</button>
+                        <button onclick="runCmd(this)" data-func="stop" disabled>stop</button>
+                    </span>
+                    <input type="range" min="0" max="5" value="1" step="0.1" id="gain"></div>
+            </section>
+            <details>
+              <summary>Options</summary>
+              view port <input type="range" min="0" step="1" id="viewport-offset"><br>
+              playbackRate: <input type="range" value="1.0" min="0" max="8.0" id="playbackRate"><br>
+              smoothing: <input type="range" min="0" max="0.95" step="0.05" value="0.95" id="smoothing"><br>
+              bar width: <input type="range" min="3" max="20" value="10" step="1" id="col-width"><br>
+              spacer width: <input type="range" min="4" max="21" value="11" step="1" id="spacer-width"><br>
+              time domain?: <input type="checkbox" id="waveform">
+            </details>
+
         </div>
-    </div>
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
         <![endif]-->
@@ -38,6 +52,7 @@
         <script src="scripts/vendor/jquery.min.js"></script>
         <script src="scripts/vendor/lodash.min.js"></script>
         <script src="scripts/vendor/backbone-min.js"></script>
+        <script src="scripts/vendor/beatdetektor.js"></script>
         <script src="scripts/main.js"></script>
         <script src="scripts/views/application-view.js"></script>
         <script src="scripts/models/application-model.js"></script>

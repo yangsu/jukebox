@@ -1,1 +1,241 @@
-/* Will be compiled down to a single stylesheet with your sass files */
+html, body {
+  height: 100%;
+  overflow-y: hidden;
+}
+body {
+  color: #333;
+  font: 10pt 'Droid Sans', Arial;
+  /*background: -webkit-radial-gradient(center center, #fff, #bbb) no-repeat;*/
+  display: -webkit-box;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  box-sizing: border-box;
+}
+
+.hidden {
+  display: none !important;
+}
+#main {
+  -webkit-perspective: 1000;
+  -webkit-transform-style: preserve-3d;
+  display: -webkit-box;
+  -webkit-box-align: center;
+  -webkit-box-orient: vertical;
+  box-sizing: border-box;
+}
+#main > section {
+  text-align: center;
+  background: -webkit-linear-gradient(top, #999, #333 10%, #333 40%, black 90%, black) no-repeat;
+  border-radius: 50px;
+  z-index: 100;
+  position: relative;
+  margin-top: 8em;
+  padding: 15px 0;
+  box-shadow: 1px 2px 5px rgba(0,0,0,0.5);
+}
+input[type="range"]{
+  -webkit-appearance: none !important;
+  background-color: #555;
+  box-shadow: 0 -1px 1px rgba(255,255,255,0.5) inset;
+  border-radius: 10px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  width: 20px;
+  height: 8px;
+  box-shadow: 1px 1px 5px rgba(0,0,0,1);
+  cursor: pointer;
+  border-top: 1px solid #fff;
+  background: #ccc -webkit-linear-gradient(top, rgb(240, 240, 240), rgb(210, 210, 210));
+}
+
+#fft {
+  /*background: -webkit-linear-gradient(top, #fff, #ddd);*/
+  /*border-radius: 20px;
+  border: 2px solid #eee;*/
+  background: -webkit-linear-gradient(top, white 80%, #ddd) no-repeat;
+/*  -webkit-mask-image: url(circle2.svg);
+*/  -webkit-mask-position: 50% 100%;
+  -webkit-mask-size: 75% 100%;
+  -webkit-mask-repeat: no-repeat;
+  /*-webkit-mask-box-image: url(mask.png) 0 stretch;*/
+
+  -webkit-transition: all 2s ease-in-out;
+}
+#fft.open {
+  -webkit-mask-size: 150% 125%;
+}
+.reflect {
+  -webkit-box-reflect: below 10px -webkit-linear-gradient(top, transparent, transparent 70%, white);
+}
+
+button, .button:before {
+  outline: none;
+  white-space: nowrap;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  text-shadow: 1px 1px #fff;
+  font-size: 14pt;
+  color: black;
+  background: -webkit-linear-gradient(top, #F9F9F9 40%, #E3E3E3 70%);
+  border: 1px solid #999;
+  border-radius: 3px;
+  padding: 5px 8px;
+  margin: 0;
+  vertical-align: middle;
+}
+button:not([disabled]):active,
+.button:active:before {
+  background: -webkit-linear-gradient(top, #E3E3E3 40%, #F9F9F9 70%);
+}
+button[disabled],
+.button[disabled] {
+  color: #ccc;
+}
+.button {
+  height: 30px;
+  width: 76px;
+}
+.button::-webkit-file-upload-button,
+.button::-moz-file-upload-button {
+  visibility: hidden;
+}
+.button:before {
+  content: 'Load file';
+  display: inline-block;
+}
+button:not([disabled]):hover,
+.button:not([disabled]):hover:before {
+  border-color: #ffcc00;
+}
+#gain {
+  width: 58%;
+  margin: 10px 0 0 0;
+  display: inline-block;
+}
+#buttons, #meters {
+  display: inline-block;
+  vertical-align: middle;
+}
+#meters {
+  margin-left: 0.5em;
+}
+#meters span {
+  width: 15px;
+  display: inline-block;
+  font-weight: 700;
+}
+#meters meter {
+  /*-webkit-appearance: relevancy-level-indicator;*/
+  width: 100px;
+}
+details {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+  z-index: 10;
+  background: rgba(255,255,255,0.5);
+  border-radius: 10px;
+  padding: 5px;
+  border: 1px solid #eee;
+}
+details span {
+  display: inline-block;
+  width: 90px;
+}
+
+.icon {
+  width: 250px;
+  height: 250px;
+  position: relative;
+  -webkit-perspective: 1500;
+}
+
+/* White circle in the middle */
+.icon:before {
+  content: '';
+
+  position: absolute;
+  left: 30%;
+  top: 30%;
+  width: 40%;
+  height: 40%;
+  z-index: -1;
+
+  background: rgb(240, 240, 240);
+  border-radius: 100%;
+}
+
+.icon div {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+
+  background-size: 100%;
+  background-repeat: no-repeat;
+
+  -webkit-transition: -webkit-transform 100ms ease-in-out;
+}
+.red {
+  background-image: url(red_small.png);
+}
+.green {
+  background-image: url(green_small.png);
+}
+.yellow {
+  background-image: url(yellow_small.png);
+}
+.blue {
+  background-image: url(blue_small.png);
+  /*-webkit-transform: scale(0.5);*/
+}
+
+/* Animations */
+@-webkit-keyframes explode {
+  0% { -webkit-transform: scale(.5) translateZ(0); z-index: 100; }
+  15% { -webkit-transform: scale(.6) translateZ(100px); z-index: 200; }
+  80% { -webkit-transform: scale(.5) translateZ(0); z-index: 100; }
+  100% { -webkit-transform: scale(.5) translateZ(0); z-index: 100; }
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotateZ(0); }
+  100% { -webkit-transform: rotateZ(360deg); }
+}
+
+.icon {
+  -webkit-animation-name: spin;
+  -webkit-animation-duration: 20s;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: linear;
+}
+/*
+.yellow {
+  -webkit-animation-name: explode;
+  -webkit-animation-duration: 3s;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: ease-out;
+  -webkit-animation-fill-mode: both;
+}
+.green {
+  -webkit-animation-name: explode;
+  -webkit-animation-duration: 3s;
+  -webkit-animation-delay: 1s;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: ease-out;
+  -webkit-animation-fill-mode: both;
+}
+.red {
+  -webkit-animation-name: explode;
+  -webkit-animation-duration: 3s;
+  -webkit-animation-delay: 2s;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: ease-out;
+  -webkit-animation-fill-mode: both;
+}*/
