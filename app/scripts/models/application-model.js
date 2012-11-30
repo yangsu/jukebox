@@ -43,9 +43,10 @@
       self.played = 0;
       self.lastTime = 0;
     },
-    switchSong: function (idOrIndex) {
+    switchSong: function (idOrIndex, preview, cb) {
       var tracks = this.get('tracks')
         , model;
+      this.stop()
       if (model = tracks.at(idOrIndex)) {
         this.set('currentIndex', idOrIndex)
       } else if (model = tracks.get(idOrIndex)) {
@@ -54,15 +55,16 @@
         console.log('error');
         return this;
       }
-
+      // console.log(model.toJSON());
       var self = this
         , switchSongFunc = function () {
           self
-            .setSource(model.get('buffer'))
+            .setSource(model.get('buffer'), preview)
             .set('currentTrack', model)
             .connect();
-          self.trigger('switchSong', model);
+          if (cb) cb();
         };
+      self.trigger('switchSong', model);
       if (model.get('loaded')) {
         switchSongFunc();
       } else {
@@ -85,7 +87,7 @@
       return this.getContextCurrentTime() - this.startTime + this.played;
     },
     // Setters
-    setSource: function (buffer) {
+    setSource: function (buffer, preview) {
       var source = this.get('source');
       if (source) {
         this.unset('source');
@@ -93,10 +95,26 @@
       source = this.get('context').createBufferSource();
       source.loop = false;
       source.buffer = buffer;
+      if (preview) {
+        this.played = Math.max(1, Math.random() * buffer.duration - this.duration);
+        this.duration = window.Constants.PREVIEW_LENGTH;
+      }
+
       return this.set({
         buffer: buffer,
         source: source
       });
+    },
+    setTracks: function (tracks) {
+      this.set('tracks', tracks);
+      tracks
+      .on('loadedATracks', function (model) {
+      }, this)
+      .on('loadedATracks', function (collection) {
+        console.log('loaded all tracks');
+        $('.loader').fadeOut();
+        // this.play();
+      }, this);
     },
     addGenerators: function () {
       if (this.get('generators')) {
@@ -136,9 +154,11 @@
     },
     reconstruct: function () {
       var context = this.get('context');
-      this.setSource(this.get('buffer'));
-      this.addGenerators();
-      this.connect();
+      if (this.get('buffer')) {
+        this.setSource(this.get('buffer'));
+        this.addGenerators();
+        this.connect();
+      }
       return this;
     },
     // Gains
@@ -162,13 +182,6 @@
         sourceFilter.frequency.value = options.threshold;
         sourceFilter.Q.value = options.quality || 30;
         this.set('sourceFilter', sourceFilter);
-      }
-      return this;
-    },
-    disconnectFilter: function (delay) {
-      if (this.get('source') && this.get('sourceGain') && this.get('sourceFilter')) {
-        // this.get('sourceFilter').disconnect(delay || 0);
-        // this.get('source').connect(this.get('sourceGain'));
       }
       return this;
     },
@@ -235,7 +248,8 @@
         , sourceAction = (action == 'noteOn' && offset) ? 'noteGrainOn' : action;
       if (this.get('source') && generators && generators.length) {
         delay = delay || 0;
-        this.get('source')[sourceAction](delay, offset || 0, this.get('buffer').duration - offset);
+        this.get('source')[sourceAction](delay, offset || 0, duration || (this.get('buffer').duration - offset));
+        delete this.duration;
         _.each(generators, function (generator) {
           generator[action](delay);
         });
@@ -248,7 +262,7 @@
         this.reconstruct();
       }
       this.startTime = this.getContextCurrentTime();
-      return this.genAction('noteOn', delay, this.lastTime || 0);
+      return this.genAction('noteOn', delay, this.lastTime || 0, this.duration);
     },
     pause: function (delay) {
       this.lastTime = this.getContextCurrentTime();
@@ -259,6 +273,7 @@
     },
     stop: function (delay) {
       this.lastTime = 0;
+      this.played = 0;
       this.set('stopped', true);
       this.disconnect();
       return this.genAction('noteOff', delay);

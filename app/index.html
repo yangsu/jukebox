@@ -9,16 +9,13 @@
         <title></title>
         <meta name="description" content=""/>
         <meta name="viewport" content="width=device-width"/>
+        <link rel="stylesheet" href="styles/kort.css"/>
         <link rel="stylesheet" href="styles/main.css"/>
 
     </head>
     <body>
     <div id="main" class="container">
         <div id="jukebox"></div>
-        <!-- <audio src="http://www.djbox.fm/api/stream/293" id="music"> -->
-        <audio src="/audio/IO-5.0.ogg" id="music">
-            <p>Your browser does not support the audio element.</p>
-        </audio>
     </div>
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
@@ -30,13 +27,10 @@
         <script src="scripts/vendor/jquery.min.js"></script>
         <script src="scripts/vendor/jquery.knob.js"></script>
         <script src="scripts/vendor/lodash.min.js"></script>
+        <script src="scripts/vendor/kort.js"></script>
         <script src="scripts/vendor/backbone.js"></script>
-        <script src="scripts/vendor/socket.io.min.js"></script>
         <!-- <script src="scripts/vendor/backbone-min.js"></script> -->
-        <script src="scripts/vendor/dancer.js"></script>
-        <!-- <script src="scripts/vendor/dancer.min.js"></script> -->
-        <script src="scripts/vendor/dancer.fft.js"></script>
-        <script src="scripts/vendor/dancer.extentions.js"></script>
+        <script src="scripts/vendor/socket.io.min.js"></script>
         <script src="scripts/vendor/dsp.js"></script>
         <script src="scripts/main.js"></script>
         <script src="scripts/views/application-view.js"></script>

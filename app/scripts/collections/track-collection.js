@@ -6,9 +6,12 @@ audio.Collections.TrackCollection = Backbone.Collection.extend({
     var self = this
       , total = this.length
       , count = 0
-      , successHandler = function (cb) {
-        if (++count >= total) {
-          self.trigger('loadedAllTracks');
+      , successHandler = function (model) {
+        ++count;
+        if (count === 1) {
+          self.trigger('loadedATracks', model);
+        } else if (count >= total) {
+          self.trigger('loadedAllTracks', this);
         }
       };
     this.each(function (trackModel) {

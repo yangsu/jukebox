@@ -1,39 +1,42 @@
 <div id="panelContainer" class="inline-block">
     <div id="panel" class="inline-block">
         <input id="progress" type="text" class="dial" data-min="0" data-max="100" data-readOnly="true" data-width="230" data-height="230" data-displayInput="false" data-thickness="0.03" data-fgColor="#e51700">
-        <input id="seek" type="text" class="dial" value="0" data-min="0" data-max="1" data-width="250" data-height="250" data-thickness="0.1">
-        <canvas class="" id="fftcanvas" width="400" height="300"></canvas>
     </div>
 </div>
 
-<ul id="tracks">
+<div id="tracks" class="">
+</div>
 
-</ul>
-
+<div id="currentTrack">
+    <%= audio.template('track')(arguments[0].currentTrack) %>
+</div>
 <div id="controlsContainer">
-    <div id="controls" class="inline-block">
-        <label for="filter">Filter</label>
-        <input id="filter" type="range" min="0" max="1" step="0.01" value="1">
-        <label for="volume">Volume</label>
-        <input id="volume" type="range" min="0" max="1" step="0.01" value="1">
+    <div id="controls">
         <div id="musicControls">
-            <span class="button">
-                <button id="play" disabled></button>
-            </span>
-            <span class="button">
-                <button id="pause" disabled></button>
-            </span>
-            <span class="button">
-                <button id="stop" disabled></button>
-            </span>
-            <span class="button">
-                <button id="next" disabled></button>
-            </span>
-            <span class="button">
-                <button id="prev" disabled></button>
-            </span>
+            <span class="buttonContainer"><span class="button">
+                <button id="covers"></button>
+            </span></span>
+            <span class="buttonContainer"><span class="button">
+                <button id="prev"></button>
+            </span></span>
+            <span class="buttonContainer"><span class="button">
+                <button id="play"></button>
+            </span></span>
+            <span class="buttonContainer"><span class="button">
+                <button id="pause"></button>
+            </span></span>
+            <span class="buttonContainer"><span class="button">
+                <button id="next"></button>
+            </span></span>
+            <span class="buttonContainer"><span class="button">
+                <button id="podcast"></button>
+            </span></span>
         </div>
+        <div id="bottomControls">
+            <canvas class="" id="fftcanvas" width="200" height="200"></canvas>
+            <input id="seek" type="text" class="dial" value="0" data-min="0" data-max="1" data-width="200" data-height="200" data-thickness="0.1" data-readOnly="true" data-displayInput="false">
+            <img src="/img/282.gif" alt="" class="loader">
+        </div>
+        <!-- <input id="volume" type="range" min="0" max="1" step="0.01" value="1"> -->
     </div>
 </div>
-
-<!-- <canvas id="fftcanvas2" width="600" height="400"></canvas> -->

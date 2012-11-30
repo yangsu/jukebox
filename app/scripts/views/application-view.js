@@ -1,6 +1,7 @@
 audio.Views.ApplicationView = Backbone.View.extend({
 
   template: audio.template('application'),
+  trackTemplate: audio.template('track'),
   initialize: function () {
     this.model
       // .on('progress', this.updateProgressBar, this)
@@ -24,12 +25,13 @@ audio.Views.ApplicationView = Backbone.View.extend({
     'click #pause': 'onPause',
     'click #stop': 'onStop',
     'click #next': 'onNext',
-    'click #previous': 'onPrevious',
+    'click #prev': 'onPrevious',
     'change #filter': 'onFilterChange',
     'change #volume': 'onVolumeChange'
   },
   onLoad: function () {
     this.$('#play').removeAttr('disabled');
+    this.$('.loader').fadeOut('slow');
     this.model.switchSong(0);
   },
   onPlay: function () {
@@ -47,10 +49,14 @@ audio.Views.ApplicationView = Backbone.View.extend({
     this.model.stop();
   },
   onNext: function () {
-
+    var l = this.model.get('tracks').length;
+    var rand = Math.floor(Math.random() * l);
+    this.model.switchSong(((this.model.get('currentIndex') + 1)|| rand)%l);
   },
   onPrevious: function () {
-
+    var l = this.model.get('tracks').length;
+    var rand = Math.floor(Math.random() * l);
+    this.model.switchSong(((this.model.get('currentIndex') - 1)|| rand)%l);
   },
   onFilterChange: function (e) {
     var element = e.target;
@@ -78,6 +84,7 @@ audio.Views.ApplicationView = Backbone.View.extend({
     $seek.trigger('change');
   },
   renderSongTransition: function (newTrack) {
+    this.$('#currentTrack').html(this.trackTemplate(newTrack.toJSON()));
     this.$('#panel > div:nth-child(2) > canvas').css({
       background: newTrack.get('cover')
     });
@@ -88,11 +95,11 @@ audio.Views.ApplicationView = Backbone.View.extend({
       h       = this.CANVAS_HEIGHT,
       w       = this.CANVAS_WIDTH,
       // count   = 512,
-      count   = 32,
+      count   = 128,
       spacing = 1,
       width   = w/count - spacing,
       binSize = freqByteData.length / count,
-      max = 5000;
+      max = 1700;
 
     freqByteData = _.chain(freqByteData)
       .groupBy(function (value, i) {
@@ -107,17 +114,29 @@ audio.Views.ApplicationView = Backbone.View.extend({
 
     // ctx.fillStyle = "#ffffff88";
     var lingrad = ctx.createLinearGradient(0, h, 0, 1);
-    lingrad.addColorStop(0, '#BBB');
-    lingrad.addColorStop(1, '#000');
+    lingrad.addColorStop(0, '#36B1BF');
+    lingrad.addColorStop(1, '#F2385A');
     ctx.fillStyle = lingrad;
 
-    for ( var i = 0; i < count; i++ ) {
-      ctx.fillRect( i * ( spacing + width ), h, width, Math.floor(-freqByteData[ i ] * h/ (max * width)) * width );
-      // ctx.fillRect( i * ( spacing + width ), h, width, -freqByteData[ i ] /max * h);
-    }
+    // for ( var i = 0; i < count; i++ ) {
+    //   ctx.fillRect( i * ( spacing + width ), h, width, Math.floor(-freqByteData[ i ] * h/ (max * width)) * width );
+    // }
 
-    for ( var i = 0, l = h/width; i < l; i++ ) {
-      ctx.clearRect(0, i*width, w, spacing)
+    // for ( var i = 0, l = h/width; i < l; i++ ) {
+    //   ctx.clearRect(0, i*width, w, spacing)
+    // }
+
+    for (var i = 0, limit = 2*Math.PI, step = limit/count; i <= count; i += 1) {
+      ctx.beginPath();
+      var begin = i*step;
+      var end = (i + 0.75)*step;
+      ctx.moveTo(100, 100);
+      var m = Math.min(80, Math.sqrt(freqByteData[ i ])* 2);
+      ctx.arc(100,100, m,begin,end,false);
+      ctx.lineTo(100, 100);
+      ctx.closePath();
+      ctx.fillStyle = lingrad;
+      ctx.fill();
     }
 
   },
@@ -126,6 +145,7 @@ audio.Views.ApplicationView = Backbone.View.extend({
     this.$('.dial').knob({
       draw: renderRing
     });
+    Kort.bind();
     return this;
   }
 
@@ -141,5 +161,5 @@ var convert = function (pos, max) {
 };
 
 var renderRing = function (argument) {
-  this.i.val(convert(this.$.val(), parseInt(this.$.data('rangeMax'))));
+  this.i.val(convert(this.$.val(), parseInt(this.$.data('rangeMax') || this.$.data('max'))));
 };

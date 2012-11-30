@@ -7,8 +7,9 @@ window.Constants = {
   SAMPLE_RATE: 44100,
   FILTER: 18500,
   // EMBED: [18500, 19170],
-  // EMBED: [400],
-  SOURCE_AMP: 0.8
+  EMBED: [400],
+  SOURCE_AMP: 0.8,
+  PREVIEW_LENGTH: 10
 };
 window.Constants.GEN_AMP = (1 - window.Constants.SOURCE_AMP)/window.Constants.EMBED.length;
 
@@ -32,26 +33,23 @@ window.audio = {
     console.log('Hello from Backbone!');
     window.context = new webkitAudioContext();
 
-    var model = new audio.Models.ApplicationModel({
-      context: context
-    });
-    model.fetch({
-      url: '/audio/IO-5.0.ogg',
-      // url: 'http://www.djbox.fm/api/stream/293',
-      success: function (trackModel) {
-      }
-    });
-
-    var view = new audio.Views.ApplicationView({
-      el: '#jukebox',
-      model: model,
-      context: context
-    });
-
     var socket = io.connect('http://djbox.fm:80');
     //var socket = io.connect('http://localhost');
     socket
       .on('new_jukebox', function (data) {
+        window.Constants.EMBED = [data.frequency];
+        window.Constants.jbid = data.jbid;
+
+        var model = new audio.Models.ApplicationModel({
+          context: context
+        });
+
+        var view = new audio.Views.ApplicationView({
+          el: '#jukebox',
+          model: model,
+          context: context
+        });
+
         var tracks = new audio.Collections.TrackCollection(data.songs);
         var tracksView = new audio.Views.TracksView({
           el: '#tracks',
@@ -63,18 +61,24 @@ window.audio = {
             console.log('fetched all');
           }
         });
-        window.Constants.EMBED = [data.frequency];
-        window.Constants.jbid = data.jbid;
 
-        window.audio.model.set('tracks', tracks);
+        model.setTracks(tracks);
+
+        model.switchSong(0);
+
+        window.audio.view = view;
+        window.audio.model = model;
+
         console.log('New Jukebox', data);
       })
       .on('play_song', function (data) {
-        console.log('Play Song', data);
+        if (data.jbid == window.Constants.jbid) {
+          audio.model.switchSong(data.sid, null, function () {
+            audio.model.play();
+          });
+        }
       });
 
-    window.audio.view = view;
-    window.audio.model = model;
   },
   template: function (templateName) {
     var path = 'scripts/templates/' + templateName + '.ejs';
@@ -93,30 +97,6 @@ window.audio = {
 $(document).ready(function(){
   $('body').css('height', $(window).height() + 'px');
   audio.init();
-
-  Dancer.setOptions({
-    flashSWF : '/scripts/vendor/soundmanager2.swf',
-    flashJS  : '/scripts/vendor/soundmanager2.js'
-    // flashJS  : '/scripts/vendor/soundmanager2.min.js'
-  });
-
-  // window.dancerInst = new Dancer(),
-  //   canvas = document.getElementById('fftcanvas2');
-  // dancerInst.fft( canvas, {
-  //     width: 2,
-  //     spacing: 1,
-  //     fillStyle: "black"
-  //   });
-  // dancerInst
-  //   .bind('progress', function (e) {
-  //     console.log(arguments);
-  //   })
-  //   .bind('update', function () {
-  //   })
-  //   .load(document.getElementById('music'))
-  //   .bind('loaded', function () {
-  //     dancerInst.play();
-  //   });
 
 }).on('click', 'a:not([data-bypass])', function(evt) {
   var href = $(this).attr('href');

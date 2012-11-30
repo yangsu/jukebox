@@ -1,5 +1,5 @@
 audio.Views.TrackView = Backbone.View.extend({
-  tagName: 'li',
+  tagName: 'div',
   className: 'track',
   template: audio.template('track'),
   initialize: function () {
@@ -9,9 +9,6 @@ audio.Views.TrackView = Backbone.View.extend({
   },
   updateProgressBar: function (progressPercentage) {
     this.$('#progress').val(progressPercentage).trigger('change');
-  },
-  onLoad: function () {
-    console.log('loaded' + this.id);
   },
   render: function () {
     this.$el.html(this.template(this.model.toJSON()));
