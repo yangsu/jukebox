@@ -73,6 +73,7 @@ window.audio = {
 };
 
 $(document).ready(function(){
+  $('body').css('height', $(window).height() + 'px');
   audio.init();
 
   Dancer.setOptions({
