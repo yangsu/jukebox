@@ -30,14 +30,14 @@ $(document).ready(function(){
     // flashJS  : '/scripts/vendor/soundmanager2.min.js'
   });
 
-  var dancer = new Dancer(),
+  window.dancerInst = new Dancer(),
     canvas = document.getElementById('fftcanvas');
-    dancer.fft( canvas, {
+  dancerInst.fft( canvas, {
       width: 2,
       spacing: 1,
       fillStyle: "black"
     });
-  dancer
+  dancerInst
     .bind('progress', function (e) {
       console.log(arguments);
     })
@@ -45,7 +45,7 @@ $(document).ready(function(){
     })
     .load(document.getElementById('music'))
     .bind('loaded', function () {
-      dancer.play();
+      dancerInst.play();
     });
 
 
