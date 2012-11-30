@@ -25,11 +25,10 @@
         var sourceGain = createGain(context, window.Constants.SOURCE_AMP);
         sourceGain.connect(masterGain);
 
-        // src? --> sourceGain --> masterGain --> output
+        // sourceGain --> masterGain --> output
         self.set({
           masterGain: masterGain,
           sourceGain: sourceGain,
-          destination: masterGain,
           generators: []
         })
         .addSourceFilter({
@@ -54,8 +53,7 @@
     fetch: function (options) {
       var model = this
         , url = options.url || model.get('url') || urlError()
-        , context = model.get('context') || contextError()
-        , destination = model.get('destination');
+        , context = model.get('context') || contextError();
 
       options = options || {};
 
@@ -94,9 +92,15 @@
 
     },
     setSource: function (buffer) {
-      var source = context.createBufferSource();
-      source.buffer = buffer;
+      if (this.get('source')) {
+        this.stop(0);
+        this.get('source').disconnect(0);
+        this.unset('source');
+      }
+      var source = this.get('context').createBufferSource();
       source.loop = false;
+      source.buffer = buffer;
+      // src --> sourceFilter --> sourceGain --> masterGain --> output
       source.connect(this.get('sourceFilter'));
       this.set({
         source: source
@@ -123,16 +127,16 @@
         sourceFilter.type = options.type;
         sourceFilter.frequency.value = options.threshold;
         sourceFilter.Q.value = options.quality || 30;
-
+        // sourceFilter --> sourceGain --> masterGain --> output
         sourceFilter.connect(this.get('sourceGain'));
         this.set('sourceFilter', sourceFilter);
       }
       return this;
     },
     disconnectFilter: function (delay) {
-      if (this.get('destination') && this.get('source') && this.get('sourceFilter')) {
+      if (this.get('source') && this.get('sourceGain') && this.get('sourceFilter')) {
         this.get('sourceFilter').disconnect(delay || 0);
-        this.get('source').connect(this.get('destination'));
+        this.get('source').connect(this.get('sourceGain'));
       }
       return this;
     },
@@ -158,9 +162,10 @@
           generatorSource.buffer.getChannelData(channel).set(signal);
         });
 
-        generatorSource.looping = options.looping || true;
+        generatorSource.loop = options.loop || true;
 
-        generatorSource.connect(this.get('destination'));
+        //generator --> masterGain --> output
+        generatorSource.connect(this.get('masterGain'));
 
         this.get('generators').push(generatorSource);
       }

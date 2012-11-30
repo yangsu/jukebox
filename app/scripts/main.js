@@ -39,6 +39,12 @@ window.audio = {
         trackModel.play();
       }
     });
+    model.fetch({
+      url: 'http://www.djbox.fm/api/stream/293',
+      success: function (trackModel) {
+        trackModel.play();
+      }
+    });
 
     $('#filter').change(function(e) {
       var element = e.target;
