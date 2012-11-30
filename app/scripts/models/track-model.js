@@ -64,6 +64,12 @@
       request.open("GET", url, true);
       request.responseType = "arraybuffer";
 
+      request.onprogress = function (evt) {
+        if (evt.lengthComputable) {
+          var percentComplete = (evt.loaded / evt.total)*100;
+          model.trigger('progress', percentComplete);
+        }
+      };
       request.onload = function(resp, status, xhr) {
         if (context) {
           context.decodeAudioData(

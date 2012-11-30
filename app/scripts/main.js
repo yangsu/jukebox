@@ -25,6 +25,7 @@ window.audio = {
   Collections: {},
   Views: {},
   Routers: {},
+  Templates: {},
   init: function() {
     console.log('Hello from Backbone!');
     window.context = new webkitAudioContext();
@@ -32,36 +33,28 @@ window.audio = {
     var model = new audio.Models.TrackModel({
       context: context
     });
-    model.fetch({
-      url: '/audio/IO-5.0.ogg',
-      // url: 'http://www.djbox.fm/api/stream/293',
-      success: function (trackModel) {
-        trackModel.play();
-      }
-    });
+    // model.fetch({
+    //   url: '/audio/IO-5.0.ogg',
+    //   // url: 'http://www.djbox.fm/api/stream/293',
+    //   success: function (trackModel) {
+    //     trackModel.play();
+    //   }
+    // });
+
+    var view = new audio.Views.TrackView({
+      el: '#jukebox',
+      model: model
+    }).render();
+
     model.fetch({
       url: 'http://www.djbox.fm/api/stream/293',
       success: function (trackModel) {
-        trackModel.play();
+        // trackModel.play();
       }
     });
 
-    $('#filter').change(function(e) {
-      var element = e.target;
-      // Clamp the frequency between the minimum value (40 Hz) and half of the
-      // sampling rate.
-      var minValue = 20;
-      var maxValue = context.sampleRate / 2;
-      // Logarithm (base 2) to compute how many octaves fall in the range.
-      var numberOfOctaves = Math.log(maxValue / minValue) / Math.LN2;
-      // Compute a multiplier from 0 to 1 based on an exponential scale.
-      var multiplier = Math.pow(2, numberOfOctaves * (element.value - 1.0));
-      // Get back to the frequency value between min and max.
-      model.setFilterFrequency(maxValue * multiplier);
-    });
-    $('#volume').change(function(e) {
-      model.setMasterVolume(e.target.value);
-    });
+    window.audio.view = view;
+    window.audio.model = model;
   },
   template: function (templateName) {
     var path = 'scripts/templates/' + templateName + '.ejs';
