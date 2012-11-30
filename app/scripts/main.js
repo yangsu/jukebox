@@ -6,6 +6,17 @@ window.audio = {
   Routers: {},
   init: function() {
     console.log('Hello from Backbone!');
+    window.context = new webkitAudioContext();
+    var model = new audio.Models.TrackModel({
+      url: '/audio/IO-5.0.ogg'
+    });
+    model.context = context;
+    model.fetch({
+      success: function (trackModel) {
+        console.log(arguments);
+        trackModel.play();
+      }
+    });
   },
   template: function (templateName) {
     var path = 'scripts/templates/' + templateName + '.ejs';
@@ -112,23 +123,6 @@ $(document).ready(function(){
       this.source.connect(context.destination);
     }
   };
-  window.context = new webkitAudioContext();
-  window.bufferLoader = new BufferLoader(
-    context,
-    {
-      base: '/audio/IO-5.0.ogg'
-    },
-    function (bufferHash) {
-       // Create two sources and play them both together.
-      var source1 = context.createBufferSource();
-      source1.buffer = bufferHash.base;
-
-      source1.connect(context.destination);
-      source1.noteOn(0);
-    }
-  );
-
-  bufferLoader.load();
 
 }).on('click', 'a:not([data-bypass])', function(evt) {
   var href = $(this).attr('href');
