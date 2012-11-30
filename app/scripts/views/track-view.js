@@ -71,8 +71,9 @@ audio.Views.TrackView = Backbone.View.extend({
 	},
 	updateSeek: function (seekPosition, duration) {
 		var $seek = this.$('#seek');
-		$seek.i = 'test' + seekPosition;
-		$seek.val(seekPosition/duration).trigger('change');
+		$seek.data('rangeMax', duration);
+		$seek.val((isNaN(seekPosition) ? 0 : seekPosition )/duration);
+		$seek.trigger('change');
 	},
 	renderFFT: function (freqByteData) {
 		var
@@ -115,14 +116,23 @@ audio.Views.TrackView = Backbone.View.extend({
 	},
 	render: function () {
 		this.$el.html(this.template(this.model.toJSON()));
-		this.$('.readonly').knob({
-			readOnly: true,
-			displayInput: false
-		});
 		this.$('.dial').knob({
-			displayInput: false
+			draw: renderRing
 		});
 		return this;
 	}
 
 });
+
+var convert = function (pos, max) {
+	if (_.isNaN(pos)) {
+		return '0:00';
+	} else {
+		pos = max*pos;
+		return Math.floor(pos/60) + ':' + ('0'+Math.floor(pos%60).toString()).substring(-2);
+	}
+};
+
+var renderRing = function (argument) {
+	this.i.val(convert(this.$.val(), parseInt(this.$.data('rangeMax'))));
+};
